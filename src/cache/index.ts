@@ -31,6 +31,10 @@ export default class Cache {
   // Insert value into the cache with an optional expiry (in ms).
   ////////////////////////////////////////////////////////////////////////////////
   add(key: string, value: any, expires: number) {
+    if (key == null) {
+      return;
+    }
+
     let entry = this._index[key];
 
     if (entry != null) {
@@ -50,6 +54,8 @@ export default class Cache {
     entry = new Entry(key, value, expiry);
     this.insert(entry);
     this._index[entry.key] = entry;
+
+    return value;
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -85,9 +91,10 @@ export default class Cache {
   rm(key: string) {
     const entry = this._index[key];
 
-    if (entry !== null) {
+    if (entry != null) {
       this.remove(entry);
       delete this._index[key];
+      return entry.value;
     }
   }
 
