@@ -79,8 +79,7 @@ app.get("/debug", (req, res) => {
   res.send(cache.toObject());
 });
 
-
 // Start the cache server.
 app.listen(port, host, () => {
-  logger(`Cache server started at http://localhost:${port}`);
+  logger(`Cache server started at http://${host}:${port}`);
 });
