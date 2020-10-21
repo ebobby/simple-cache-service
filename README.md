@@ -2,6 +2,10 @@
 
 Basic LRU cache server over HTTP.
 
+By default the server runs on localhost:8080 and has a limit of 5 entries in the cache.
+
+These can be changed in `src/index.ts`.
+
 # API
 ### POST "/cache"
 
