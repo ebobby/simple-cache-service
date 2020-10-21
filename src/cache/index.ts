@@ -4,10 +4,10 @@ import Entry from "./entry"
 // Basic LRU cache.
 //
 // Supports:
-//  * add(key, value) - O(1) runtime.
-//  * rm(key)         - O(1) runtime.
-//  * fetch(key)      - O(1) runtime.
-//  * toObject()      - O(n) runtime.
+//  * add(key, value, expires) - O(1) runtime.
+//  * rm(key)                  - O(1) runtime.
+//  * fetch(key)               - O(1) runtime.
+//  * toObject()               - O(n) runtime.
 //
 ////////////////////////////////////////////////////////////////////////////////
 export default class Cache {
@@ -28,9 +28,9 @@ export default class Cache {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  // Insert value into the cache.
+  // Insert value into the cache with an optional expiry (in ms).
   ////////////////////////////////////////////////////////////////////////////////
-  add(key: string, value: any) {
+  add(key: string, value: any, expires: number) {
     let entry = this._index[key];
 
     if (entry != null) {
@@ -44,8 +44,10 @@ export default class Cache {
       }
     }
 
+    const expiry = (expires || 0 > 0) ? Date.now() + expires : 0;
+
     // Add the entry and update the index.
-    entry = new Entry(key, value);
+    entry = new Entry(key, value, expiry);
     this.insert(entry);
     this._index[entry.key] = entry;
   }
@@ -58,12 +60,18 @@ export default class Cache {
     const entry = this._index[key];
 
     if (entry != null) {
+      this.remove(entry);
+      delete this._index[key];
+
+      // If the entry is expired just return.
+      if (entry.expires !== 0 && entry.expires <= Date.now()) {
+        return;
+      }
+
       // Since this entry is _now_ the most recent one, promote  it to the top.
       // Use existing methods to remove/insert. Runtime performance is still O(1)
       // but we are a bit wasteful with memory allocations.
-      const promoted = new Entry(entry.key, entry.value);
-
-      this.remove(entry);
+      const promoted = new Entry(entry.key, entry.value, entry.expires);
       this.insert(promoted);
       this._index[key] = promoted
 
@@ -91,7 +99,7 @@ export default class Cache {
     let next: Entry = this._top;
 
     while (next != null) {
-      result[next.key] = next.value
+      result[next.key] = { value: next.value, expires: next.expires }
       next = next.next;
     }
 
