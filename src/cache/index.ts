@@ -1,5 +1,15 @@
 import Entry from "./entry"
 
+////////////////////////////////////////////////////////////////////////////////
+// Basic LRU cache.
+//
+// Supports:
+//  * add(key, value) - O(1) runtime.
+//  * rm(key)         - O(1) runtime.
+//  * fetch(key)      - O(1) runtime.
+//  * toObject()      - O(n) runtime.
+//
+////////////////////////////////////////////////////////////////////////////////
 export default class Cache {
   _top: Entry;
   _bottom: Entry;
@@ -17,6 +27,9 @@ export default class Cache {
     this._count = 0;
   }
 
+  ////////////////////////////////////////////////////////////////////////////////
+  // Insert value into the cache.
+  ////////////////////////////////////////////////////////////////////////////////
   add(key: string, value: any) {
     let entry = this._index[key];
 
@@ -31,14 +44,16 @@ export default class Cache {
       }
     }
 
+    // Add the entry and update the index.
     entry = new Entry(key, value);
-
-    // Add entry.
     this.insert(entry);
-    // Index entry.
     this._index[entry.key] = entry;
   }
 
+  ////////////////////////////////////////////////////////////////////////////////
+  // Fetch value from the cache.
+  // If it exists, the value is now considered recently used.
+  ////////////////////////////////////////////////////////////////////////////////
   fetch(key: string) {
     const entry = this._index[key];
 
@@ -56,6 +71,9 @@ export default class Cache {
     }
   }
 
+  ////////////////////////////////////////////////////////////////////////////////
+  // Remove value from the cache.
+  ////////////////////////////////////////////////////////////////////////////////
   rm(key: string) {
     const entry = this._index[key];
 
@@ -65,6 +83,9 @@ export default class Cache {
     }
   }
 
+  ////////////////////////////////////////////////////////////////////////////////
+  // Return an object representation of the cache key/values.
+  ////////////////////////////////////////////////////////////////////////////////
   toObject() {
     const result: { [key: string]: any } = {};
     let next: Entry = this._top;
@@ -77,7 +98,7 @@ export default class Cache {
     return result;
   }
 
-  // Add a cache entry.
+  // Insert a cache entry into the entry list.
   private insert(entry: Entry) {
     // If empty, set the _bottom of the list.
     if (this._top == null) {
@@ -91,7 +112,7 @@ export default class Cache {
       this._top.previous = entry;
     }
 
-    // New entries _always_ go on _top.
+    // New entries _always_ go on top. They are considered recently used.
     this._top = entry;
     this._count++;
 
@@ -103,23 +124,26 @@ export default class Cache {
     if (entry == null)
       return;
 
-    /// Pluck this entry out.
-
+    /// Pluck this entry out:
     // If there's a previous...
-    if (entry.previous != null)
+    if (entry.previous != null) {
       // ...the next for our previous is our next.
       entry.previous.next = entry.next;
-    else
-      // ...if we don't have a previous we are the _top.
+    }
+    else {
+      // ...if we don't have a previous we are the top.
       this._top = entry.next;
+    }
 
     // If there's a next...
-    if (entry.next != null)
+    if (entry.next != null) {
       // ...the previous for our next is our previous.
       entry.next.previous = entry.previous;
-    else
-      // ...if we don't have a next we are the _bottom.
+    }
+    else {
+      // ...if we don't have a next we are the bottom.
       this._bottom = entry.previous;
+    }
 
     this._count--;
   }
