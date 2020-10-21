@@ -43,7 +43,16 @@ export default class Cache {
     const entry = this._index[key];
 
     if (entry != null) {
-      return entry.value;
+      // Since this entry is _now_ the most recent one, promote  it to the top.
+      // Use existing methods to remove/insert. Runtime performance is still O(1)
+      // but we are a bit wasteful with memory allocations.
+      const promoted = new Entry(entry.key, entry.value);
+
+      this.remove(entry);
+      this.insert(promoted);
+      this._index[key] = promoted
+
+      return promoted.value;
     }
   }
 
