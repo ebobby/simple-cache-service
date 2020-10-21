@@ -30,7 +30,7 @@ export default class Cache {
   ////////////////////////////////////////////////////////////////////////////////
   // Insert value into the cache with an optional expiry (in ms).
   ////////////////////////////////////////////////////////////////////////////////
-  add(key: string, value: any, expires: number) {
+  add(key: string, value: any, expires: number = 0) {
     if (key == null) {
       return;
     }
@@ -55,7 +55,7 @@ export default class Cache {
     this.insert(entry);
     this._index[entry.key] = entry;
 
-    return value;
+    return entry;
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -111,6 +111,21 @@ export default class Cache {
     }
 
     return result;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Testing functions.
+  ////////////////////////////////////////////////////////////////////////////////
+  count() {
+    return this._count;
+  }
+
+  top() {
+    return this._top;
+  }
+
+  bottom() {
+    return this._bottom;
   }
 
   // Insert a cache entry into the entry list.
